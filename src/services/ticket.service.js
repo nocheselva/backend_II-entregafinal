@@ -28,12 +28,17 @@ export class TicketService {
       throw { status: 400, message: 'El evento ya ha finalizado' };
     }
 
+   // 4. Verificar duplicado activo
     const existingTicket = await this.ticketRepository.findByUserAndEvent(userId, eventId);
     if (existingTicket) {
-      throw { status: 400, message: 'Ya posees una inscripción activa para este evento' };
+      throw { status: 409, message: 'Ya tenés una inscripción activa a este evento' };
     }
 
-    const reservationCode = 'TICK-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+    if (event.capacity < qty) {
+      throw { status: 409, message: 'No hay cupo disponible para este evento' };
+    }
+
+    const reservationCode = 'EVT-' + crypto.randomBytes(3).toString('hex').toUpperCase();
 
     const newTicket = await this.ticketRepository.create({
       user: userId,
@@ -43,14 +48,21 @@ export class TicketService {
       reservationCode
     });
 
+    const newCapacity = event.capacity - qty;
+    await this.eventRepository.update(eventId, { capacity: newCapacity });
+
     if (userDetails?.email) {
-      sendTicketConfirmationEmail(
-        userDetails.email,
-        `${userDetails.first_name || ''} ${userDetails.last_name || ''}`.trim() || 'Usuario',
-        event.title,
-        reservationCode,
-        qty
-      );
+      try {
+        await sendTicketConfirmationEmail(
+          userDetails.email,
+          `${userDetails.first_name || ''} ${userDetails.last_name || ''}`.trim() || 'Usuario',
+          event.title,
+          reservationCode,
+          qty
+        );
+      } catch (error) {
+        console.error('Error al enviar correo de confirmación:', error.message);
+      }
     }
 
     return newTicket;
@@ -73,10 +85,20 @@ export class TicketService {
       throw { status: 403, message: 'No tienes permisos para cancelar este ticket' };
     }
 
-    return await this.ticketRepository.updateStatus(ticketId, 'cancelled');
+    const updatedTicket = await this.ticketRepository.updateStatus(ticketId, 'cancelled');
+
+    const event = await this.eventRepository.findById(ticket.event._id || ticket.event);
+    if (event) {
+      await this.eventRepository.update(event._id, { capacity: event.capacity + ticket.quantity });
+    }
+
+    return updatedTicket;
   }
 
   async getMyTickets(userId) {
     return await this.ticketRepository.findByUser(userId);
   }
 }
+
+// Exportación por defecto para evitar errores de importación
+export default TicketService;

@@ -29,3 +29,9 @@ router.get('/current', customAuthenticate('current'), sessionsController.current
 router.post('/logout', sessionsController.logout);
 
 export default router;
+
+// POST /api/sessions/logout
+router.post('/logout', (req, res) => {
+  res.clearCookie('currentUser'); // Nombre de tu cookie JWT
+  return res.status(200).json({ status: 'success', message: 'Sesión cerrada correctamente' });
+});
