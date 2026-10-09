@@ -5,15 +5,16 @@ export class TicketDAO {
     return await TicketModel.findById(id).populate('user').populate('event');
   }
 
- async findByUserAndEvent(userId, eventId) {
-    // Buscamos los tickets de este evento que no estén cancelados
+async findByUserAndEvent(userId, eventId) {
     const tickets = await TicketModel.find({ 
       event: eventId, 
       status: { $ne: 'cancelled' } 
     });
-
-    // Filtramos para encontrar si coincide con el ID del usuario
-    const existing = tickets.find(t => t.user.toString() === userId.toString());
+    // Compara correctamente si t.user es un objeto populado o una cadena
+    const existing = tickets.find(t => {
+      const uId = t.user?._id ? t.user._id.toString() : t.user.toString();
+      return uId === userId.toString();
+    });
     return existing || null;
   }
 

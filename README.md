@@ -1,44 +1,47 @@
-# Backend II - 7ma Pre-Entrega: Sistema de Eventos y Tickets
+# Plataforma de Gestión de Eventos y Tickets — Entrega Final
 
-Este proyecto es una API REST desarrollada con **Node.js**, **Express**, **MongoDB (Mongoose)** y **Nodemailer**, diseñada para la gestión de eventos, reserva de tickets y autenticación de usuarios.
+Proyecto desarrollado en **Node.js**, **Express** y **MongoDB** con arquitectura en capas (DAO, Repository, DTO, Services y Controllers) para la gestión de usuarios, publicación de eventos y reserva/cancelación de tickets en tiempo real.
 
----
+## 🚀 Características Principales
 
-## Tecnologías Utilizadas
-
-* **Entorno de Ejecución:** Node.js
-* **Framework Web:** Express.js
-* **Base de Datos:** MongoDB & Mongoose
-* **Autenticación:** JWT / Sessions & Cookies
-* **Envío de Correos:** Nodemailer
-* **Herramienta de Pruebas:** Postman
-* **Passport.js** & **JSON Web Tokens (JWT)** (con cookies `HttpOnly`)
-* **Bcrypt** para encriptación de contraseñas
-* **Nodemon** para entorno de desarrollo
-
----
-
-##  Configuración del Entorno
-
-1. **Clonar el repositorio e instalar dependencias:**
-   ```bash
-   npm install
+* **Autenticación y Autorización:** Manejo de sesiones mediante JWT / Cookies con control de roles (`user`, `organizer`, `admin`).
+* **Arquitectura Profesional en Capas:**
+  * **Controllers & Services:** Lógica de negocio desfasada de la capa de presentación.
+  * **Repositories & DAOs:** Abstracción completa del acceso a datos con Mongoose.
+  * **DTOs:** Filtrado de datos sensibles (ocultamiento de contraseñas y sanitización de respuestas).
+* **Gestión de Eventos y Capacidad:**
+  * Creación y actualización con restricciones según rol (solo creador o `admin`).
+  * Descuento automático de cupos al inscribirse y restitución de vacantes al cancelar.
+  * Validación de reglas de negocio: control de duplicados (`409 Conflict`), eventos vencidos o no publicados, y cupos agotados.
+* **Notificaciones por Correo:** Envío automático de email de confirmación con código de reserva dinámico (`EVT-XXXXXX`) utilizando Nodemailer.
+* **Paginación y Filtros:** Endpoint para consulta paginada de eventos por estado.
 
 ---
 
-## Estructura del Proyecto
+## 🛠️ Tecnologías Utilizadas
+
+* **Node.js** (v22+)
+* **Express.js**
+* **MongoDB & Mongoose**
+* **JSON Web Tokens (JWT) & Cookie Parser**
+* **Bcrypt** (Encriptación de contraseñas)
+* **Nodemailer** (Envío de correos)
+* **Dotenv** (Manejo de variables de entorno)
+
+---
+
+## 📂 Estructura del Proyecto
 
 ```text
 src/
-├── config/         # Configuración de Passport y estrategias de autenticación
-├── controllers/    # Manejo de peticiones HTTP y respuestas
-├── daos/           # Persistencia de datos con Mongoose
-├── dtos/           # Transformación y filtrado de datos expuestos (UserDTO)
-├── middleware/     # Autenticación, autorización por rol y ownership
-├── models/         # Esquemas de Mongoose
-├── repositories/   # Abstracción entre la capa de negocio y la persistencia
-├── routes/         # Definición de endpoints de la aplicación
-├── services/       # Lógica de negocio principal
-├── utils/          # Utilidades (JWT, Bcrypt, helpers)
-├── app.js          # Configuración e inicialización de Express
-└── server.js       # Punto de entrada y conexión a MongoDB
+├── config/           # Configuración de base de datos y entorno
+├── controllers/      # Controladores de solicitudes HTTP
+├── daos/             # Data Access Objects (Mongoose Queries)
+├── dtos/             # Data Transfer Objects
+├── middleware/       # Autenticación, validación de roles y errores
+├── models/           # Esquemas de Mongoose
+├── repositories/     # Capa de repositorios
+├── routes/           # Definición de rutas del sistema
+├── services/         # Lógica de negocio principal
+├── utils/            # Helper de correo (Nodemailer) y hash
+└── server.js         # Punto de entrada de la aplicación

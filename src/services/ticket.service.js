@@ -28,7 +28,8 @@ export class TicketService {
       throw { status: 400, message: 'El evento ya ha finalizado' };
     }
 
-   // 4. Verificar duplicado activo
+   
+   // 4. Verificar duplicado activo (LLAMADA al repositorio, no definición)
     const existingTicket = await this.ticketRepository.findByUserAndEvent(userId, eventId);
     if (existingTicket) {
       throw { status: 409, message: 'Ya tenés una inscripción activa a este evento' };
